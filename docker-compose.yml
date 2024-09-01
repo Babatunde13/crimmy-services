@@ -1,0 +1,77 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "4000:4000"
+    depends_on:
+      - order-service
+      - user-service
+      - product-service
+    environment:
+      - GATEWAY_PORT=4000
+      - ORDER_SERVICE_GRPC_URL=order-service:4001
+      - USER_SERVICE_GRPC_URL=user-service:4002
+      - PRODUCT_SERVICE_GRPC_URL=product-service:4003
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "4001:4001"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      - ORDER_SERVICE_DB_URL=mongodb://mongodb:27017/orders
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - ORDER_SERVICE_GRPC_URL=order-service:4001
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "4002:4002"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      - USER_SERVICE_DB_URL=mongodb://mongodb:27017/users
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - USER_SERVICE_GRPC_URL=user-service:4002
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "4003:4003"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      - PRODUCT_SERVICE_DB_URL=mongodb://mongodb:27017/products
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - PRODUCT_SERVICE_GRPC_URL=product-service:4003
+
+volumes:
+  mongo-data:
+  rabbitmq-data:
+
+networks:
+  default:
+    driver: bridge

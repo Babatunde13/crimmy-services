@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "user.proto";
+import "product.proto";
+
+package order;
+
+// The Order message
+message Order {
+  string id = 1;
+  string productId = 2;
+  string userId = 3;
+  int32 quantity = 4;
+  float totalPrice = 5;
+  string status = 6;
+  user.User user = 7;
+  product.Product product = 8;
+}
+
+message CreateOrderRequest {
+  string userId = 1;
+  string productId = 2;
+  int32 quantity = 3;
+  float totalPrice = 4;
+  string status = 5;
+  user.User user = 6;
+  product.Product product = 7;
+}
+
+// The request message containing the order ID
+message GetOrderRequest {
+  string id = 1;
+}
+
+message GetOrdersByProductRequest {
+  string productId = 1;
+}
+
+// The response message containing the order details
+message GetOrderResponse {
+  Order order = 1;
+}
+
+// The request message containing the user ID
+message GetOrdersByUserRequest {
+  string userId = 1;
+}
+
+message GetOrdersResponse {
+  string message = 1;
+  repeated Order orders = 2;
+  bool success = 3;
+}
+
+// The service definition for OrderService
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (Order);
+  rpc GetOrders(google.protobuf.Empty) returns (GetOrdersResponse);
+  rpc GetOrdersByUser(GetOrdersByUserRequest) returns (GetOrdersResponse);
+  rpc GetProductOrders(GetOrdersByProductRequest) returns (GetOrdersResponse);
+  rpc GetOrderByID(GetOrderRequest) returns (GetOrderResponse);
+  rpc DeleteOrder(GetOrderRequest) returns (google.protobuf.Empty);
+}
