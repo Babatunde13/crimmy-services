@@ -19,6 +19,9 @@ message User {
   string email = 3;
   string address = 4;
   int32 age = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+  string password = 8;
 }
 
 // The request message containing the user ID
@@ -45,4 +48,5 @@ service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
   rpc DeleteUser(GetUserRequest) returns (google.protobuf.Empty);
   rpc UpdateUser(UpdateUserInput) returns (User);
+  rpc LoginUser(User) returns (User);
 }

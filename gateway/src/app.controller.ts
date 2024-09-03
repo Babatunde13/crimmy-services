@@ -6,10 +6,13 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { AppService } from './app.service';
+import { AuthGuard } from './guards/AuthGuard';
+import { AuthUser } from './decorators/user.decorator';
 
-@Controller('api/v1/')
+@Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
@@ -24,11 +27,14 @@ export class AppController {
   }
 
   @Post('products')
-  createProduct(@Body() data: any) {
+  @UseGuards(AuthGuard)
+  createProduct(@Body() data: any, @AuthUser('id') userId: string) {
+    data.userId = userId;
     return this.appService.createProduct(data);
   }
 
   @Delete('products/:id')
+  @UseGuards(AuthGuard)
   deleteProduct(@Param('id') id: string) {
     return this.appService.deleteProduct(id);
   }
@@ -38,44 +44,56 @@ export class AppController {
     return this.appService.createUser(data);
   }
 
+  @Post('auth/login')
+  loginUser(@Body() data: any) {
+    return this.appService.login(data);
+  }
+
   @Get('users/:id')
   getUser(@Param('id') id: string) {
     return this.appService.getUser(id);
   }
 
   @Delete('users/:id')
+  @UseGuards(AuthGuard)
   deleteUser(@Param('id') id: string) {
     return this.appService.deleteUser(id);
   }
 
   @Post('orders')
-  createOrder(@Body() data: any) {
+  @UseGuards(AuthGuard)
+  createOrder(@Body() data: any, @AuthUser('id') userId: string) {
+    data.userId = userId;
     return this.appService.createOrder(data);
   }
 
   @Get('orders/:id')
+  @UseGuards(AuthGuard)
   getOrderById(@Param('id') id: string) {
     return this.appService.getOrderById(id);
   }
 
   @Get('orders')
-  getOrders() {
+  @UseGuards(AuthGuard)
+  async getOrders() {
     return this.appService.getOrders();
   }
 
   @Delete('orders/:id')
+  @UseGuards(AuthGuard)
   deleteOrder(@Param('id') id: string) {
     return this.appService.deleteOrder(id);
   }
 
-  @Get('orders/users/:user_id')
-  getOrdersByUser(@Param('user_id') user_id: string) {
+  @Get('orders/users/me')
+  @UseGuards(AuthGuard)
+  getOrdersByUser(@AuthUser('id') user_id: string) {
     return this.appService.getOrdersByUser(user_id);
   }
 
-  @Put('users/:id')
-  updateUser(@Param('id') id: string, @Body() data: any) {
-    console.log('Updating user in gateway:', id, data);
+  @Put('users/')
+  @UseGuards(AuthGuard)
+  updateUser(@Body() data: any, @AuthUser('id') id: string) {
     return this.appService.updateUser(id, data);
   }
 
@@ -85,7 +103,17 @@ export class AppController {
   }
 
   @Get('products/:productId/orders')
+  @UseGuards(AuthGuard)
   getProductOrders(@Param('productId') productId: string) {
     return this.appService.getProductOrders(productId);
+  }
+
+  @Get('users/products/:productId/orders')
+  @UseGuards(AuthGuard)
+  getUserProductOrders(
+    @AuthUser('id') userId: string,
+    @Param('productId') productId: string,
+  ) {
+    return this.appService.getUserProductOrders(userId, productId);
   }
 }

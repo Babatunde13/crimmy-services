@@ -1,25 +1,92 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Order, OrderDocument } from './models/Order';
 import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import { ClientGrpc, RpcException } from '@nestjs/microservices';
+import { firstValueFrom, Observable } from 'rxjs';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { status } from '@grpc/grpc-js';
+import { Order, OrderDocument } from './models/Order';
+
+interface UserServiceClient {
+  createUser(user: any): Observable<any>;
+  getUser(data: { id: string }): Observable<any>;
+  deleteUser(data: { id: string }): Observable<any>;
+  updateUser(data: any): Observable<any>;
+}
+
+interface ProductServiceClient {
+  getProduct(data: { id: string }): Observable<any>;
+  createProduct(product: any): Observable<any>;
+  deleteProduct(data: { id: string }): Observable<any>;
+  getProducts({}): Observable<any>;
+}
 
 @Injectable()
 export class AppService {
+  private userService: UserServiceClient;
+  private productService: ProductServiceClient;
+
   constructor(
+    @Inject('USER_SERVICE') private readonly userClient: ClientGrpc,
+    @Inject('PRODUCT_SERVICE') private readonly productClient: ClientGrpc,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly amqpConnection: AmqpConnection,
   ) {}
 
-  async createOrder(order: any) {
-    console.log('Creating order in order-service:', order);
-    const createdOrder = new this.orderModel(order);
-    await createdOrder.save();
+  onModuleInit() {
+    this.userService =
+      this.userClient.getService<UserServiceClient>('UserService');
+    this.productService =
+      this.productClient.getService<ProductServiceClient>('ProductService');
+  }
 
+  async createOrder(order: any) {
+    const userResp = await firstValueFrom(
+      this.userService.getUser({ id: order.userId }),
+    );
+    if (!userResp || !userResp.user) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+    let product: any = await this.cacheManager.get(
+      `product_${order.productId}`,
+    );
+    if (!product) {
+      const productResp = await firstValueFrom(
+        this.productService.getProduct({ id: order.productId }),
+      );
+      if (!productResp || !productResp.product) {
+        throw new RpcException({
+          code: status.NOT_FOUND,
+          message: 'Product not found',
+        });
+      }
+      product = productResp.product;
+    }
+
+    if (product.quantity < order.quantity || product.quantity <= 0) {
+      throw new RpcException({
+        code: status.FAILED_PRECONDITION,
+        message: 'Product out of stock',
+      });
+    }
+    order.status = 'pending';
+    order.totalPrice = product.price * order.quantity;
+    order.product = product;
+    order.user = userResp.user;
+    const createdOrder = await this.orderModel.create(order);
+
+    product.quantity -= order.quantity;
+    await this.cacheManager.set(`product_${order.productId}`, product);
     this.amqpConnection.publish('app_events', 'order.created', {
       productId: order.productId,
       quantity: order.quantity,
     });
+
     return createdOrder;
   }
 
@@ -35,7 +102,6 @@ export class AppService {
 
   async getOrders() {
     const orders = await this.orderModel.find().exec();
-    console.log('Orders:', orders);
     return orders;
   }
 
@@ -55,7 +121,6 @@ export class AppService {
   })
   async handleUserUpdate(msg: any) {
     const { userId, user } = msg;
-    console.log('Message:', msg);
 
     await this.orderModel.updateMany({ userId }, { user });
   }
@@ -71,13 +136,18 @@ export class AppService {
   })
   async handleProductUpdate(msg: any) {
     const { productId, product } = msg;
-    console.log('Message:', msg);
 
     await this.orderModel.updateMany({ productId }, { product });
+    await this.cacheManager.set(`product_${productId}`, product);
   }
 
   async getProductOrders(productId: string) {
     const orders = await this.orderModel.find({ productId }).exec();
+    return orders;
+  }
+
+  async getUserProductOrders(userId: string, productId: string) {
+    const orders = await this.orderModel.find({ userId, productId }).exec();
     return orders;
   }
 }

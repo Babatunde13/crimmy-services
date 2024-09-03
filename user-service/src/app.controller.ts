@@ -25,4 +25,9 @@ export class AppController {
   updateUser(data: any) {
     return this.appService.updateUser(data.id, data);
   }
+
+  @GrpcMethod('UserService', 'LoginUser')
+  login(data: any) {
+    return this.appService.login(data);
+  }
 }

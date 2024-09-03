@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { UserSchema } from './models/User';
 import envs from './config/envs';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -25,6 +27,26 @@ import envs from './config/envs';
       connectionInitOptions: { wait: false, timeout: 10000 },
       uri: process.env.RABBITMQ_URL,
     }),
+    ClientsModule.register([
+      {
+        name: 'ORDER_SERVICE',
+        transport: Transport.GRPC,
+        options: {
+          url: process.env.ORDER_SERVICE_GRPC_URL,
+          package: 'order',
+          protoPath: join(process.cwd(), 'proto/order.proto'),
+        },
+      },
+      {
+        name: 'PRODUCT_SERVICE',
+        transport: Transport.GRPC,
+        options: {
+          url: process.env.PRODUCT_SERVICE_GRPC_URL,
+          package: 'product',
+          protoPath: join(process.cwd(), 'proto/product.proto'),
+        },
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],

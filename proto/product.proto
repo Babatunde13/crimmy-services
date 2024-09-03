@@ -5,6 +5,17 @@ import "user.proto";
 
 package product;
 
+message CreateProductRequest {
+  string userId = 1;
+  string name = 2;
+  string description = 3;
+  float price = 4;
+  int32 quantity = 5;
+  repeated string images = 6;
+  repeated string tags = 7;
+  string category = 8;
+}
+
 // The Product message
 message Product {
   string id = 1;
@@ -17,6 +28,8 @@ message Product {
   repeated string tags = 8;
   string category = 9;
   user.User user = 10;
+  string createdAt = 11;
+  string updatedAt = 12;
 }
 
 // The request message containing the product ID
@@ -37,7 +50,7 @@ message GetProductsResponse {
 
 // The service definition for ProductService
 service ProductService {
-  rpc CreateProduct(Product) returns (Product);
+  rpc CreateProduct(CreateProductRequest) returns (Product);
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
   rpc DeleteProduct(GetProductRequest) returns (google.protobuf.Empty);
   rpc GetProducts(google.protobuf.Empty) returns (GetProductsResponse);

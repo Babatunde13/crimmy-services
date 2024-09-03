@@ -4,9 +4,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 
 async function bootstrap() {
-  console.log('RABBITMQ_URL', process.env.RABBITMQ_URL);
-  console.log('ORDER_SERVICE_GRPC_URL', process.env.ORDER_SERVICE_GRPC_URL);
-  console.log('ORDER_SERVICE_DB_URL', process.env.ORDER_SERVICE_DB_URL);
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {

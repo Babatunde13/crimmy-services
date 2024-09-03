@@ -1,8 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "user.proto";
 import "product.proto";
+import "user.proto";
 
 package order;
 
@@ -16,16 +16,14 @@ message Order {
   string status = 6;
   user.User user = 7;
   product.Product product = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
 }
 
 message CreateOrderRequest {
   string userId = 1;
   string productId = 2;
   int32 quantity = 3;
-  float totalPrice = 4;
-  string status = 5;
-  user.User user = 6;
-  product.Product product = 7;
 }
 
 // The request message containing the order ID
@@ -47,6 +45,11 @@ message GetOrdersByUserRequest {
   string userId = 1;
 }
 
+message GetUserProductOrdersRequest {
+  string userId = 1;
+  string productId = 2;
+}
+
 message GetOrdersResponse {
   string message = 1;
   repeated Order orders = 2;
@@ -61,4 +64,5 @@ service OrderService {
   rpc GetProductOrders(GetOrdersByProductRequest) returns (GetOrdersResponse);
   rpc GetOrderByID(GetOrderRequest) returns (GetOrderResponse);
   rpc DeleteOrder(GetOrderRequest) returns (google.protobuf.Empty);
+  rpc GetUserProductOrders(GetUserProductOrdersRequest) returns (GetOrdersResponse);
 }

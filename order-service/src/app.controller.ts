@@ -62,4 +62,21 @@ export class AppController {
       return { message: 'Error retrieving orders', success: false };
     }
   }
+
+  @GrpcMethod('OrderService', 'GetUserProductOrders')
+  async getUserProductOrders(data: { userId: string; productId: string }) {
+    try {
+      const orders = await this.appService.getUserProductOrders(
+        data.userId,
+        data.productId,
+      );
+      return {
+        orders,
+        message: 'User orders for product retrieved successfully',
+        success: true,
+      };
+    } catch (error) {
+      return { message: 'Error retrieving orders', success: false };
+    }
+  }
 }

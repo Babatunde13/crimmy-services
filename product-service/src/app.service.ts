@@ -1,22 +1,76 @@
-import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import mongoose, { Model } from 'mongoose';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product, ProductDocument } from './models/Product';
 import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import { ClientGrpc, RpcException } from '@nestjs/microservices';
+import { firstValueFrom, Observable } from 'rxjs';
+import { status } from '@grpc/grpc-js';
+
+interface OrderServiceClient {
+  createOrder(order: any): Observable<any>;
+  getOrderById(id: { id: string }): Observable<any>;
+  getOrders({}): Observable<any>;
+  getOrdersByUser(data: { user_id: string }): Observable<any>;
+  deleteOrder(data: { id: string }): Observable<any>;
+  getProductOrders(data: { productId: string }): Observable<any>;
+}
+
+interface UserServiceClient {
+  createUser(user: any): Observable<any>;
+  getUser(data: { id: string }): Observable<any>;
+  deleteUser(data: { id: string }): Observable<any>;
+  updateUser(data: any): Observable<any>;
+}
 
 @Injectable()
 export class AppService {
+  private orderService: OrderServiceClient;
+  private userService: UserServiceClient;
+
   constructor(
+    @Inject('ORDER_SERVICE') private readonly orderClient: ClientGrpc,
+    @Inject('USER_SERVICE') private readonly userClient: ClientGrpc,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     private readonly amqpConnection: AmqpConnection,
   ) {}
 
+  onModuleInit() {
+    this.orderService =
+      this.orderClient.getService<OrderServiceClient>('OrderService');
+    this.userService =
+      this.userClient.getService<UserServiceClient>('UserService');
+  }
+
   async getProduct(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: 'Invalid product ID',
+      });
+    }
+
     const product = await this.productModel.findById(id).exec();
+    if (!product) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Product not found',
+      });
+    }
     return { product };
   }
 
   async createProduct(product: any) {
+    const userResp = await firstValueFrom(
+      this.userService.getUser({ id: product.userId }),
+    );
+    if (!userResp || !userResp.user) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+    product.user = userResp.user;
     const createdProduct = new this.productModel(product);
     await createdProduct.save();
 
@@ -29,12 +83,20 @@ export class AppService {
   }
 
   async getProducts() {
-    const products = await this.productModel.find().exec();
-    return {
-      products,
-      message: 'Products retrieved successfully',
-      success: true,
-    };
+    try {
+      const products = await this.productModel.find().exec();
+      return {
+        products,
+        message: 'Products retrieved successfully',
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error retrieving products:', error);
+      return {
+        message: 'Error retrieving products',
+        success: false,
+      };
+    }
   }
 
   /**
@@ -48,13 +110,11 @@ export class AppService {
   })
   async handleUserUpdate(msg: any) {
     const { userId, user } = msg;
-    console.log('Message:', msg);
 
     await this.productModel.updateMany({ userId }, { user });
   }
 
   async updateProduct(id: string, product: any) {
-    console.log('Updating product order in order-service:', id, product);
     delete product.id;
     const updatedProduct = await this.productModel
       .findByIdAndUpdate(id, product, { new: true })

@@ -18,6 +18,13 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
   gateway:
     build: ./gateway
     ports:
@@ -31,6 +38,7 @@ services:
       - ORDER_SERVICE_GRPC_URL=order-service:4001
       - USER_SERVICE_GRPC_URL=user-service:4002
       - PRODUCT_SERVICE_GRPC_URL=product-service:4003
+      - JWT_SECRET=secret
 
   order-service:
     build: ./order-service
@@ -39,10 +47,15 @@ services:
     depends_on:
       - mongodb
       - rabbitmq
+      - redis
     environment:
       - ORDER_SERVICE_DB_URL=mongodb://mongodb:27017/orders
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - ORDER_SERVICE_GRPC_URL=order-service:4001
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - USER_SERVICE_GRPC_URL=user-service:4002
+      - PRODUCT_SERVICE_GRPC_URL=product-service:4003
 
   user-service:
     build: ./user-service
@@ -55,6 +68,8 @@ services:
       - USER_SERVICE_DB_URL=mongodb://mongodb:27017/users
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - USER_SERVICE_GRPC_URL=user-service:4002
+      - ORDER_SERVICE_GRPC_URL=order-service:4001
+      - PRODUCT_SERVICE_GRPC_URL=product-service:4003
 
   product-service:
     build: ./product-service
@@ -67,10 +82,13 @@ services:
       - PRODUCT_SERVICE_DB_URL=mongodb://mongodb:27017/products
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - PRODUCT_SERVICE_GRPC_URL=product-service:4003
+      - ORDER_SERVICE_GRPC_URL=order-service:4001
+      - USER_SERVICE_GRPC_URL=user-service:4002
 
 volumes:
   mongo-data:
   rabbitmq-data:
+  redis-data:
 
 networks:
   default:

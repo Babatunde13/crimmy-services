@@ -17,10 +17,6 @@ async function bootstrap() {
   );
 
   await app.listen();
-  console.log(
-    'Product service is running on:',
-    process.env.PRODUCT_SERVICE_GRPC_URL,
-  );
 }
 
 bootstrap();

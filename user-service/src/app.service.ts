@@ -1,13 +1,17 @@
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './models/User';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { ClientGrpc, RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 
 @Injectable()
 export class AppService {
   constructor(
+    @Inject('ORDER_SERVICE') private readonly orderClient: ClientGrpc,
+    @Inject('PRODUCT_SERVICE') private readonly productClient: ClientGrpc,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly amqpConnection: AmqpConnection,
   ) {}
@@ -31,7 +35,6 @@ export class AppService {
   }
 
   async updateUser(id: string, user: any) {
-    console.log('Updating user in user-service:', id, user);
     delete user.id;
     if (user.password) {
       user.password = await bcrypt.hash(user.password, 10);
@@ -48,5 +51,29 @@ export class AppService {
     });
 
     return updatedUser;
+  }
+
+  async login(data: any) {
+    const user = await this.userModel
+      .findOne({ email: data.email })
+      .select('+password')
+      .exec();
+    if (!user) {
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: 'Invalid email or password',
+      });
+    }
+
+    const match = await bcrypt.compare(data.password, user.password);
+    if (!match) {
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: 'Invalid email or password',
+      });
+    }
+
+    delete user.password;
+    return user;
   }
 }
