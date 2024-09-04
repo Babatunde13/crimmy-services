@@ -8,6 +8,9 @@ class ProductOrderSchema {
 
   @Prop({ required: true })
   quantity: number;
+
+  @Prop({ required: true })
+  price: number;
 }
 
 @Schema({ timestamps: true })

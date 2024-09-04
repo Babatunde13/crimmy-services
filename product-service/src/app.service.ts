@@ -143,6 +143,13 @@ export class AppService {
       })
       .exec();
 
+    if (!updatedProduct) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Product not found',
+      });
+    }
+
     // publish to product queue
     await this.amqpConnection.publish('app_events', 'product.updated', {
       productId: updatedProduct._id,

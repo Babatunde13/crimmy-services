@@ -1,6 +1,7 @@
 export interface ProductOrderDto {
   id: string;
   quantity: number;
+  price: number;
 }
 
 export interface Product {

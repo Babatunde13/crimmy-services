@@ -7,7 +7,7 @@ import { catchError, firstValueFrom, Observable } from 'rxjs';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { status } from '@grpc/grpc-js';
 import { Order, OrderDocument } from './models/Order';
-import { CreateOrderDto, Product } from './types/order.dto';
+import { CreateOrderDto, Product, ProductOrderDto } from './types/order.dto';
 import {
   isValidId,
   validateCreateOrder,
@@ -64,6 +64,7 @@ export class AppService {
     const productCacheMap: { [key: string]: Product } = {};
     let totalPrice = 0;
     let totalQuantity = 0;
+    const updatedProductOrders: ProductOrderDto[] = [];
     for (const product of order.products) {
       let productCache = await this.cacheManager.get<Product>(
         `product_${product.id}`,
@@ -100,6 +101,12 @@ export class AppService {
         });
       }
 
+      updatedProductOrders.push({
+        id: product.id,
+        quantity: product.quantity,
+        price: productCache.price,
+      });
+
       productCache.id = product.id;
       productCacheMap[product.id] = { ...productCache };
       productCache.quantity -= product.quantity;
@@ -113,8 +120,12 @@ export class AppService {
       totalQuantity += product.quantity;
     }
 
+    console.log('Total price:', totalPrice);
+    console.log('Total quantity:', totalQuantity);
+    console.log('Updated product orders:', updatedProductOrders);
     const createdOrder = await this.orderModel.create({
       ...order,
+      products: updatedProductOrders,
       quantity: totalQuantity,
       amount: totalPrice,
       productsCache: productCacheMap,
@@ -136,6 +147,12 @@ export class AppService {
     }
 
     const order = await this.orderModel.findOne({ _id: id, owner: ownerId });
+    if (!order) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Order not found',
+      });
+    }
     return order;
   }
 
@@ -195,6 +212,13 @@ export class AppService {
     const updatedOrder = await this.orderModel
       .findOneAndUpdate({ _id: order.id }, order, { new: true })
       .exec();
+
+    if (!updatedOrder) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Order not found',
+      });
+    }
     return updatedOrder;
   }
 }
