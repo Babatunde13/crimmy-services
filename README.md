@@ -58,3 +58,9 @@ The order service is responsible for handling orders. The service handles creati
 ## Architectural Diagram
 
 ![Architecture Diagram](./assets/crimmy.drawio.png)
+
+
+## Next Steps
+1. Use the grpc proto library to generate typescript files from the proto files.
+2. Move the proto files and generated typescript files to a common repository and publish it as Github package, this will make it easier to share the proto files and generated typescript files across services instead of copying the files to each service.
+3. Add tests to each services.
