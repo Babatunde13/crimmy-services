@@ -13,7 +13,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException | unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    console.log('exception', exception);
     if (exception instanceof ValidationException) {
       response.status(exception.getStatus()).json({
         success: false,
