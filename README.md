@@ -32,16 +32,16 @@ Then you'll have to naviagte to each service and run the following command in ea
 npm run start
 ```
 
-
+## Services
 The following are going to run in the dockjer compose
-- `mongodb`: This is the database service, it uses a volume to persist the data on the host machine
+- `mongodb`: This is the database service, it uses a volume to persist the data on the host machine. Each service has its own database.
 - `rabbitmq`: This is the message broker service, it uses a volume to persist the data on the host machine
 - `order-service`: This service is responsible for handling orders
 - `product-service`: This service is responsible for handling products
 - `owner-service`: This service is responsible for handling owners
 - `gateway`: This service is responsible for routing http requests to the appropriate service
 
-The internal services communicates with each other via rabbitmq. The `gateway` service is the only service that is exposed to the outside world.
+The internal services communicates with each other via rabbitmq and gRPC. The `gateway` service is the only service that is exposed to the outside world.
 
 ## Documentation
 The documentation is in the `/api/v1/docs` route. You can access it by visiting `http://localhost:4000/api/v1/docs` in your browser if you start the app with docker or to the port where the gateway runs after modifying it.
