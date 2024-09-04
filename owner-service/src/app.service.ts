@@ -24,6 +24,12 @@ export class AppService {
   async getOwnerById(id: string): Promise<Owner> {
     validateId(id);
     const owner = await this.ownerModel.findOne({ _id: id }).exec();
+    if (!owner) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Owner not found',
+      });
+    }
     return owner;
   }
 
@@ -77,6 +83,13 @@ export class AppService {
     const updatedOwner = await this.ownerModel
       .findOneAndUpdate({ _id: data.id }, update, { new: true })
       .exec();
+
+    if (!updatedOwner) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Owner not found',
+      });
+    }
 
     await this.amqpConnection.publish('app_events', 'owner.updated', {
       ownerId: updatedOwner._id,

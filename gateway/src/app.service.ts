@@ -76,15 +76,39 @@ export class AppService {
   }
 
   async getProducts() {
-    return this.productService.getProducts({});
+    return this.productService.getProducts({}).pipe(
+      catchError((error) => {
+        if (error.code === 5) {
+          throw new NotFoundException(error.message);
+        }
+
+        throw new BadRequestException(error.message);
+      }),
+    );
   }
 
   async updateProduct(id: string, ownerId: string, data: UpdateProductDto) {
-    return this.productService.updateProduct({ ...data, id, ownerId });
+    return this.productService.updateProduct({ ...data, id, ownerId }).pipe(
+      catchError((error) => {
+        if (error.code === 5) {
+          throw new NotFoundException(error.message);
+        }
+
+        throw new BadRequestException(error.message);
+      }),
+    );
   }
 
   async getMyProducts(ownerId: string) {
-    return this.productService.getMyProducts({ id: ownerId });
+    return this.productService.getMyProducts({ id: ownerId }).pipe(
+      catchError((error) => {
+        if (error.code === 5) {
+          throw new NotFoundException(error.message);
+        }
+
+        throw new BadRequestException(error.message);
+      }),
+    );
   }
 
   async register(data: RegisterDto) {
@@ -117,7 +141,15 @@ export class AppService {
   }
 
   async getOwner(id: string) {
-    return this.ownerService.getOwner({ id });
+    return this.ownerService.getOwner({ id }).pipe(
+      catchError((error) => {
+        if (error.code === 5) {
+          throw new NotFoundException(error.message);
+        }
+
+        throw new BadRequestException(error.message);
+      }),
+    );
   }
 
   async updateOwner(id: string, data: UpdateOwnerDto) {
@@ -157,15 +189,33 @@ export class AppService {
   }
 
   async getMySingleOrder(id: string, ownerid: string) {
-    return this.orderService.getMySingleOrder({
-      orderId: id,
-      ownerId: ownerid,
-    });
+    return this.orderService
+      .getMySingleOrder({
+        orderId: id,
+        ownerId: ownerid,
+      })
+      .pipe(
+        catchError((error) => {
+          if (error.code === 5) {
+            throw new NotFoundException(error.message);
+          }
+
+          throw new BadRequestException(error.message);
+        }),
+      );
   }
 
   async getProductOrders(productId: string, ownerId: string) {
     const product = await firstValueFrom(
-      this.productService.getProduct({ id: productId }),
+      this.productService.getProduct({ id: productId }).pipe(
+        catchError((error) => {
+          if (error.code === 5) {
+            throw new NotFoundException(error.message);
+          }
+
+          throw new BadRequestException(error.message);
+        }),
+      ),
     );
 
     if (!product) {
