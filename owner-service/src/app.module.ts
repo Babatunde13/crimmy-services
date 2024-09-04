@@ -1,13 +1,13 @@
+import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { UserSchema } from './models/User';
+import { OwnerSchema } from './models/Owner';
 import envs from './config/envs';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 
 @Module({
   imports: [
@@ -15,8 +15,8 @@ import { join } from 'path';
       isGlobal: true,
       load: [envs],
     }),
-    MongooseModule.forRoot(process.env.USER_SERVICE_DB_URL),
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forRoot(process.env.OWNER_SERVICE_DB_URL),
+    MongooseModule.forFeature([{ name: 'Owner', schema: OwnerSchema }]),
     RabbitMQModule.forRoot(RabbitMQModule, {
       exchanges: [
         {

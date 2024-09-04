@@ -2,52 +2,68 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 import "product.proto";
-import "user.proto";
+import "owner.proto";
 
 package order;
+
+message SimpleProduct {
+  string id = 1;
+  int32 quantity = 2;
+}
 
 // The Order message
 message Order {
   string id = 1;
-  string productId = 2;
-  string userId = 3;
+  string owner = 2;
+  repeated SimpleProduct products = 3;
   int32 quantity = 4;
-  float totalPrice = 5;
+  float amount = 5;
   string status = 6;
-  user.User user = 7;
-  product.Product product = 8;
-  string createdAt = 9;
-  string updatedAt = 10;
+  string shippingAddress = 7;
+  string billingAddress = 8;
+  string paymentMethod = 9;
+  string paymentStatus = 10;
+  string deliveryDate = 11;
+  string customerNotes = 12;
+  map<string, product.SimpleProduct> productsCache = 13;
+  string createdAt = 14;
+  string updatedAt = 15;
 }
 
 message CreateOrderRequest {
-  string userId = 1;
-  string productId = 2;
-  int32 quantity = 3;
+  string ownerId = 1;
+  string shippingAddress = 4;
+  string billingAddress = 5;
+  string paymentMethod = 6;
+  string customerNotes = 7;
+  string deliveryDate = 8;
+  repeated SimpleProduct products = 9;
 }
 
-// The request message containing the order ID
-message GetOrderRequest {
+message UpdateOrderRequest {
   string id = 1;
+  string status = 2;
+  string paymentStatus = 3;
 }
 
-message GetOrdersByProductRequest {
-  string productId = 1;
+// all orders that a owner has made
+message GetMyOrdersRequest {
+  string ownerId = 1;
 }
 
-// The response message containing the order details
-message GetOrderResponse {
-  Order order = 1;
-}
-
-// The request message containing the user ID
-message GetOrdersByUserRequest {
-  string userId = 1;
-}
-
-message GetUserProductOrdersRequest {
-  string userId = 1;
+// all orders that a owner has made for a product
+message GetProductOwnerOrdersRequest {
+  string ownerId = 1;
   string productId = 2;
+}
+
+message GetMySingleOrderRequest {
+  string ownerId = 1;
+  string orderId = 2;
+}
+
+message GetProductOrdersRequest {
+  string productId = 1;
 }
 
 message GetOrdersResponse {
@@ -59,10 +75,8 @@ message GetOrdersResponse {
 // The service definition for OrderService
 service OrderService {
   rpc CreateOrder(CreateOrderRequest) returns (Order);
-  rpc GetOrders(google.protobuf.Empty) returns (GetOrdersResponse);
-  rpc GetOrdersByUser(GetOrdersByUserRequest) returns (GetOrdersResponse);
-  rpc GetProductOrders(GetOrdersByProductRequest) returns (GetOrdersResponse);
-  rpc GetOrderByID(GetOrderRequest) returns (GetOrderResponse);
-  rpc DeleteOrder(GetOrderRequest) returns (google.protobuf.Empty);
-  rpc GetUserProductOrders(GetUserProductOrdersRequest) returns (GetOrdersResponse);
+  rpc GetMyOrders(GetMyOrdersRequest) returns (GetOrdersResponse);
+  rpc GetMySingleOrder(GetMySingleOrderRequest) returns (Order);
+  rpc GetProductOrders(GetProductOrdersRequest) returns (GetOrdersResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (Order);
 }

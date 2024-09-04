@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod } from '@nestjs/microservices';
+import { CreateProductDto, UpdateProductDto } from './types/product.dto';
 
 @Controller('product')
 export class AppController {
@@ -12,7 +13,7 @@ export class AppController {
   }
 
   @GrpcMethod('ProductService', 'CreateProduct')
-  createProduct(data: any) {
+  createProduct(data: CreateProductDto) {
     return this.appService.createProduct(data);
   }
 
@@ -24,5 +25,15 @@ export class AppController {
   @GrpcMethod('ProductService', 'GetProducts')
   getProducts() {
     return this.appService.getProducts();
+  }
+
+  @GrpcMethod('ProductService', 'UpdateProduct')
+  updateProduct(data: UpdateProductDto & { id: string; ownerId: string }) {
+    return this.appService.updateProduct(data);
+  }
+
+  @GrpcMethod('ProductService', 'GetMyProducts')
+  getMyProducts(data: { id: string }) {
+    return this.appService.getMyProducts(data.id);
   }
 }

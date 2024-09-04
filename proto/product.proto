@@ -1,12 +1,12 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "user.proto";
+import "owner.proto";
 
 package product;
 
 message CreateProductRequest {
-  string userId = 1;
+  string ownerId = 1;
   string name = 2;
   string description = 3;
   float price = 4;
@@ -22,19 +22,38 @@ message Product {
   string name = 2;
   string description = 3;
   float price = 4;
-  string userId = 5;
+  string ownerId = 5;
   int32 quantity = 6;
   repeated string images = 7;
   repeated string tags = 8;
   string category = 9;
-  user.User user = 10;
+  owner.Owner owner = 10;
   string createdAt = 11;
   string updatedAt = 12;
+}
+
+message SimpleProduct {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  float price = 4;
+  string ownerId = 5;
+  int32 quantity = 6;
+  repeated string images = 7;
+  repeated string tags = 8;
+  string category = 9;
+  string createdAt = 10;
+  string updatedAt = 11;
 }
 
 // The request message containing the product ID
 message GetProductRequest {
   string id = 1;
+}
+
+message DeleteProductRequest {
+  string id = 1;
+  string ownerId = 2;
 }
 
 // The response message containing the product details
@@ -51,8 +70,9 @@ message GetProductsResponse {
 // The service definition for ProductService
 service ProductService {
   rpc CreateProduct(CreateProductRequest) returns (Product);
-  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
-  rpc DeleteProduct(GetProductRequest) returns (google.protobuf.Empty);
+  rpc GetProduct(GetProductRequest) returns (Product);
+  rpc DeleteProduct(GetProductRequest) returns (Product);
   rpc GetProducts(google.protobuf.Empty) returns (GetProductsResponse);
+  rpc GetMyProducts(GetProductRequest) returns (GetProductsResponse);
   rpc UpdateProduct(Product) returns (Product);
 }

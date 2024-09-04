@@ -8,25 +8,25 @@ import {
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { catchError, firstValueFrom } from 'rxjs';
-import { UserServiceClient } from '../types/interfaces';
+import { OwnerServiceClient } from '../types/types';
 import { validateToken } from 'src/utils/tokens';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private userService: UserServiceClient;
+  private ownerService: OwnerServiceClient;
 
   constructor(
-    @Inject('USER_SERVICE') private readonly userClient: ClientGrpc,
+    @Inject('OWNER_SERVICE') private readonly ownerClient: ClientGrpc,
   ) {}
 
   onModuleInit() {
-    this.userService =
-      this.userClient.getService<UserServiceClient>('UserService');
+    this.ownerService =
+      this.ownerClient.getService<OwnerServiceClient>('OwnerService');
   }
 
-  private async getUser(id: string) {
-    const userResp = await firstValueFrom(
-      this.userService.getUser({ id }).pipe(
+  private async getOwner(id: string) {
+    const owner = await firstValueFrom(
+      this.ownerService.getOwner({ id }).pipe(
         catchError(() => {
           throw new HttpException(
             'Unauthorized access',
@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
       ),
     );
 
-    return userResp?.user;
+    return owner;
   }
 
   private async validateRequest(request: any) {
@@ -58,18 +58,18 @@ export class AuthGuard implements CanActivate {
       throw new HttpException('Unauthorized access', HttpStatus.UNAUTHORIZED);
     }
 
-    const user = await this.getUser((decoded as any).id);
-    if (!user) {
+    const owner = await this.getOwner((decoded as any).id);
+    if (!owner) {
       throw new HttpException('Unauthorized access', HttpStatus.UNAUTHORIZED);
     }
 
-    return user;
+    return owner;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user = await this.validateRequest(request);
-    request.user = user;
+    const owner = await this.validateRequest(request);
+    request.owner = owner;
     return true;
   }
 }

@@ -3,13 +3,17 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import envs from './config/envs';
-import { AppController } from './app.controller';
+import {
+  OrderController,
+  OwnerController,
+  ProductController,
+} from './app.controller';
 import { AppService } from './app.service';
 import {
   ORDER_PACKAGE,
   ORDER_SERVICE,
-  USER_PACKAGE,
-  USER_SERVICE,
+  OWNER_PACKAGE,
+  OWNER_SERVICE,
   PRODUCT_PACKAGE,
   PRODUCT_SERVICE,
 } from './constants';
@@ -31,12 +35,12 @@ import {
         },
       },
       {
-        name: USER_SERVICE,
+        name: OWNER_SERVICE,
         transport: Transport.GRPC,
         options: {
-          url: process.env.USER_SERVICE_GRPC_URL,
-          package: USER_PACKAGE,
-          protoPath: join(process.cwd(), 'proto/user.proto'),
+          url: process.env.OWNER_SERVICE_GRPC_URL,
+          package: OWNER_PACKAGE,
+          protoPath: join(process.cwd(), 'proto/owner.proto'),
         },
       },
       {
@@ -51,6 +55,6 @@ import {
     ]),
   ],
   providers: [AppService],
-  controllers: [AppController],
+  controllers: [OrderController, OwnerController, ProductController],
 })
 export class AppModule {}

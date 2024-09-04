@@ -11,37 +11,18 @@ export class AppController {
     return this.appService.createOrder(data);
   }
 
-  @GrpcMethod('OrderService', 'GetOrderById')
-  getOrderById(data: { id: string }) {
-    return this.appService.getOrderById(data.id);
+  @GrpcMethod('OrderService', 'GetMySingleOrder')
+  getOrderById(data: { orderId: string; ownerId: string }) {
+    return this.appService.getMySingleOrder(data.orderId, data.ownerId);
   }
 
-  @GrpcMethod('OrderService', 'GetOrders')
-  async getOrders() {
+  @GrpcMethod('OrderService', 'GetMyOrders')
+  async getMyOrders(data: { ownerId: string }) {
     try {
-      const orders = await this.appService.getOrders();
+      const orders = await this.appService.getMyOrders(data.ownerId);
       return {
         orders,
         message: 'Orders retrieved successfully',
-        success: true,
-      };
-    } catch (error) {
-      return { message: 'Error retrieving orders', success: false };
-    }
-  }
-
-  @GrpcMethod('OrderService', 'DeleteOrder')
-  deleteOrder(data: { id: string }) {
-    return this.appService.deleteOrder(data.id);
-  }
-
-  @GrpcMethod('OrderService', 'GetOrdersByUser')
-  async getOrdersByUser(data: { user_id: string }) {
-    try {
-      const orders = await this.appService.getOrdersByUser(data.user_id);
-      return {
-        orders,
-        message: 'Orders for user retrieved successfully',
         success: true,
       };
     } catch (error) {
@@ -63,20 +44,8 @@ export class AppController {
     }
   }
 
-  @GrpcMethod('OrderService', 'GetUserProductOrders')
-  async getUserProductOrders(data: { userId: string; productId: string }) {
-    try {
-      const orders = await this.appService.getUserProductOrders(
-        data.userId,
-        data.productId,
-      );
-      return {
-        orders,
-        message: 'User orders for product retrieved successfully',
-        success: true,
-      };
-    } catch (error) {
-      return { message: 'Error retrieving orders', success: false };
-    }
+  @GrpcMethod('OrderService', 'UpdateOrder')
+  async updateOrder(data: any) {
+    return this.appService.updateOrder(data);
   }
 }

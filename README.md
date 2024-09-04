@@ -17,7 +17,7 @@ This step runs the following services:
 - `rabbitmq`: This is the message broker service, it uses a volume to persist the data on the host machine
 - `order-service`: This service is responsible for handling orders
 - `product-service`: This service is responsible for handling products
-- `user-service`: This service is responsible for handling users
+- `owner-service`: This service is responsible for handling owners
 - `gateway`: This service is responsible for routing http requests to the appropriate service
 
 The internal services communicates with each other via rabbitmq. The `gateway` service is the only service that is exposed to the outside world.
@@ -38,8 +38,8 @@ The following endpoints are available for the services:
 - `PUT /api/v1/products/:id`: Update a product by id
 - `DELETE /api/v1/products/:id`: Delete a product by id
 
-3. `user-service`
-- `GET /api/v1/users`: Get all users
+3. `owner-service`
+- `GET /api/v1/owners`: Get all owners
 - `POST /api/v1/auth/signup`: Create a user
 - `POST /api/v1/auth/login`: Login a user
 - `GET /api/v1/users/:id`: Get a user by id

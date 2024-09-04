@@ -25,10 +25,10 @@ export class Product {
   category: string;
 
   @Prop()
-  userId: string;
+  ownerId: string;
 
   @Prop({ type: Object })
-  user: any;
+  owner: any;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

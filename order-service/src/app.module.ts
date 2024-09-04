@@ -1,6 +1,8 @@
+import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
@@ -8,8 +10,6 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { OrderSchema } from './models/Order';
 import envs from './config/envs';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 
 @Module({
   imports: [
@@ -38,12 +38,12 @@ import { join } from 'path';
     }),
     ClientsModule.register([
       {
-        name: 'USER_SERVICE',
+        name: 'OWNER_SERVICE',
         transport: Transport.GRPC,
         options: {
-          url: process.env.USER_SERVICE_GRPC_URL,
-          package: 'user',
-          protoPath: join(process.cwd(), 'proto/user.proto'),
+          url: process.env.OWNER_SERVICE_GRPC_URL,
+          package: 'owner',
+          protoPath: join(process.cwd(), 'proto/owner.proto'),
         },
       },
       {

@@ -1,5 +1,5 @@
 {
-  "name": "user-service",
+  "name": "owner-service",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -23,7 +23,7 @@
     "generate:proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/grpc --ts_proto_opt=outputServices=grpc-js,env=node,esModuleInterop=true --proto_path=./proto ./proto/*.proto"
   },
   "dependencies": {
-    "@golevelup/nestjs-rabbitmq": "^5.4.0",
+    "@golevelup/nestjs-rabbitmq": "^5.4.1",
     "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.13",
     "@nestjs/common": "^10.0.0",

@@ -29,12 +29,12 @@ import { join } from 'path';
     }),
     ClientsModule.register([
       {
-        name: 'USER_SERVICE',
+        name: 'OWNER_SERVICE',
         transport: Transport.GRPC,
         options: {
-          url: process.env.USER_SERVICE_GRPC_URL,
-          package: 'user',
-          protoPath: join(process.cwd(), 'proto/user.proto'),
+          url: process.env.OWNER_SERVICE_GRPC_URL,
+          package: 'owner',
+          protoPath: join(process.cwd(), 'proto/owner.proto'),
         },
       },
       {
