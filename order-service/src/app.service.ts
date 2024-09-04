@@ -120,9 +120,6 @@ export class AppService {
       totalQuantity += product.quantity;
     }
 
-    console.log('Total price:', totalPrice);
-    console.log('Total quantity:', totalQuantity);
-    console.log('Updated product orders:', updatedProductOrders);
     const createdOrder = await this.orderModel.create({
       ...order,
       products: updatedProductOrders,
