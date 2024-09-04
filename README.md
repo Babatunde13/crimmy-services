@@ -8,11 +8,32 @@ To run this application, you need to have only docker and docker-compose install
 git clone https://github.com/Babatunde13/crimmy-services.git
 ```
 
-2. Start the application by starting the docker containers like so:
+2. The `Makefile` contains some useful commands to help you run the application. You can run the following command to start the application:
 ```bash
-docker-compose up
+make setup # This command will generate the proto files and .env files that's needed for the services to run
 ```
-This step runs the following services:
+
+3. If you want to run with docker compose, you can run the either of following command:
+a.
+```bash
+make run # This command will start the application with docker-compose
+```
+b.
+```bash
+docker-compose up -d # This command will start the application with docker-compose
+```
+
+4. If you want to run the services without docker, you can run the following command:
+```bash
+make install # This command will install the dependencies for the services
+```
+Then you'll have to naviagte to each service and run the following command in each service:
+```bash
+npm run start
+```
+
+
+The following are going to run in the dockjer compose
 - `mongodb`: This is the database service, it uses a volume to persist the data on the host machine
 - `rabbitmq`: This is the message broker service, it uses a volume to persist the data on the host machine
 - `order-service`: This service is responsible for handling orders
@@ -23,26 +44,17 @@ This step runs the following services:
 The internal services communicates with each other via rabbitmq. The `gateway` service is the only service that is exposed to the outside world.
 
 ## Documentation
-The following endpoints are available for the services:
-1. `order-service`
-- `GET /api/v1/orders`: Get all orders
-- `POST /api/v1/orders`: Create an order
-- `GET /api/v1/orders/:id`: Get an order by id
-- `PUT /api/v1/orders/:id`: Update an order by id
-- `DELETE /api/v1/orders/:id`: Delete an order by id
+The documentation is in the `/api/v1/docs` route. You can access it by visiting `http://localhost:4000/api/v1/docs` in your browser if you start the app with docker or to the port where the gateway runs after modifying it.
 
-2. `product-service`
-- `GET /api/v1/products`: Get all products
-- `POST /api/v1/products`: Create a product
-- `GET /api/v1/products/:id`: Get a product by id
-- `PUT /api/v1/products/:id`: Update a product by id
-- `DELETE /api/v1/products/:id`: Delete a product by id
+### Owner Service
+The owner service is responsible for handling owners. The service handles registering an owner, logging in an owner, getting an owner, and updating an owner.
 
-3. `owner-service`
-- `GET /api/v1/owners`: Get all owners
-- `POST /api/v1/auth/signup`: Create a user
-- `POST /api/v1/auth/login`: Login a user
-- `GET /api/v1/users/:id`: Get a user by id
-- `GET /api/v1/users`: Get logged in user
-- `PUT /api/v1/users`: Update logged in user
-- `DELETE /api/v1/users/`: Delete logged in user
+### Product Service
+The product service is responsible for handling products. The service handles creating a product, getting a product, getting all products, updating a product, and deleting a product.
+
+### Order Service
+The order service is responsible for handling orders. The service handles creating an order, getting an order, getting all orders, updating an order.
+
+## Architectural Diagram
+
+![Architecture Diagram](./assets/crimmy.drawio.png)
