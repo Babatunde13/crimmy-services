@@ -66,12 +66,16 @@ export class CreateOrderDto {
 export class UpdateOrderDto {
   @ApiProperty()
   @IsString()
-  @IsEnum(['Pending', 'Shipped', 'Delivered', 'Cancelled'])
+  @IsEnum(['Pending', 'Shipped', 'Delivered', 'Cancelled'], {
+    message: 'Status must be either Pending, Shipped, Delivered or Cancelled',
+  })
   status: string;
 
   @ApiProperty()
   @IsString()
-  @IsEnum(['Paid', 'Pending', 'Failed'])
+  @IsEnum(['Paid', 'Pending', 'Failed'], {
+    message: 'Payment status must be either Paid, Pending or Failed',
+  })
   paymentStatus: string;
 }
 

@@ -46,6 +46,7 @@ export class CreateProductDto {
   @IsString({ each: true })
   tags: string[];
 
+  @ApiProperty()
   @IsString()
   category: string;
 }

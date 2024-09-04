@@ -28,7 +28,7 @@ import {
   GetOrderByIdDto,
   UpdateOrderDto,
 } from './dto/order.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Owner')
 @Controller()
@@ -48,6 +48,7 @@ export class OwnerController {
   }
 
   @ApiOperation({ summary: 'Update Owner' })
+  @ApiSecurity('bearer')
   @Put('users')
   @UseGuards(AuthGuard)
   updateOwner(@Body() data: UpdateOwnerDto, @AuthOwner('id') id: string) {
@@ -55,6 +56,7 @@ export class OwnerController {
   }
 
   @ApiOperation({ summary: 'Get Auth Owner' })
+  @ApiSecurity('bearer')
   @Get('users/profile')
   @UseGuards(AuthGuard)
   getAuthOwner(@AuthOwner() owner: OwnerDto) {
@@ -62,6 +64,7 @@ export class OwnerController {
   }
 
   @ApiOperation({ summary: 'Get Owner By ID' })
+  @ApiSecurity('bearer')
   @Get('users/:id')
   getOwner(@Param() data: GetOwnerByIdDto) {
     return this.appService.getOwner(data.id);
@@ -80,6 +83,7 @@ export class ProductController {
   }
 
   @ApiOperation({ summary: 'Get My Products' })
+  @ApiSecurity('bearer')
   @Get('products/mine')
   @UseGuards(AuthGuard)
   getMyProducts(@AuthOwner('id') ownerId: string) {
@@ -93,6 +97,7 @@ export class ProductController {
   }
 
   @ApiOperation({ summary: 'Create Product' })
+  @ApiSecurity('bearer')
   @Post('products')
   @UseGuards(AuthGuard)
   createProduct(
@@ -103,6 +108,7 @@ export class ProductController {
   }
 
   @ApiOperation({ summary: 'Delete Product' })
+  @ApiSecurity('bearer')
   @Delete('products/:id')
   @UseGuards(AuthGuard)
   deleteProduct(@Param() { id }: GetOwnerByIdDto) {
@@ -110,6 +116,7 @@ export class ProductController {
   }
 
   @ApiOperation({ summary: 'Update Product' })
+  @ApiSecurity('bearer')
   @Put('products/:id')
   @UseGuards(AuthGuard)
   updateProduct(
@@ -127,6 +134,7 @@ export class OrderController {
   constructor(private readonly appService: AppService) {}
 
   @ApiOperation({ summary: 'Create Order' })
+  @ApiSecurity('bearer')
   @Post('orders')
   @UseGuards(AuthGuard)
   createOrder(@Body() data: CreateOrderDto, @AuthOwner('id') ownerId: string) {
@@ -134,6 +142,7 @@ export class OrderController {
   }
 
   @ApiOperation({ summary: 'Get My Order By ID' })
+  @ApiSecurity('bearer')
   @Get('orders/:id')
   @UseGuards(AuthGuard)
   getOrderById(
@@ -144,6 +153,7 @@ export class OrderController {
   }
 
   @ApiOperation({ summary: 'Get My Orders' })
+  @ApiSecurity('bearer')
   @Get('orders')
   @UseGuards(AuthGuard)
   async getOrders(@AuthOwner('id') ownerId: string) {
@@ -151,6 +161,7 @@ export class OrderController {
   }
 
   @ApiOperation({ summary: 'Get Product Orders(for product owner)' })
+  @ApiSecurity('bearer')
   @Get('products/:id/orders')
   @UseGuards(AuthGuard)
   getProductOrders(
@@ -161,6 +172,7 @@ export class OrderController {
   }
 
   @ApiOperation({ summary: 'Update Order' })
+  @ApiSecurity('bearer')
   @Put('orders/:id')
   @UseGuards(AuthGuard)
   updateOrder(@Param() { id }: GetOrderByIdDto, @Body() data: UpdateOrderDto) {
